@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>DAXON MOBILITY — Car Rental | Barman, MP</title>
+<link rel="icon" type="image/jpeg" href="logo.jpg">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A1730">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --navy:#0A1730;
+    --navy-deep:#010717;
+    --sapphire:#122A52;
+    --sapphire-light:#1E4785;
+    --gold:#C99A2E;
+    --gold-deep:#A67C1E;
+    --gold-light:#E8C468;
+    --gold-hi:#F2DD82;
+    --silver:#D5D6D8;
+    --green:#1E7A4C;
+    --green-light:#E7F5EC;
+    --cream:#F7F5F0;
+    --ink:#1A1F2B;
+    --muted:#6B7280;
+    --line:#E4E1D8;
+    --danger:#B3413B;
+    --radius:14px;
+    --shadow:0 8px 24px rgba(10,23,48,0.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:0.2px;}
+  .brand{font-family:'Oswald',sans-serif;text-transform:uppercase;}
+  img{max-width:100%;display:block;}
+  button{font-family:inherit;cursor:pointer;border:none;}
+  input,select{font-family:inherit;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:40;
+    background:var(--navy-deep);
+    color:#fff;
+    padding:11px 16px;
+    display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid rgba(201,154,46,0.35);
+  }
+  .brand-row{display:flex;align-items:center;gap:10px;}
+  .brand-logo{
+    width:38px;height:38px;border-radius:50%;object-fit:cover;
+    border:1.5px solid var(--gold);
+    box-shadow:0 0 0 3px rgba(201,154,46,0.15);
+  }
+  .brand{font-size:17px;font-weight:600;letter-spacing:0.5px;line-height:1.1;}
+  .brand span{color:var(--gold-hi);}
+  .tag{font-size:9.5px;color:var(--silver);letter-spacing:2.5px;text-transform:uppercase;margin-top:2px;font-weight:500;}
+  .topbar-actions{display:flex;gap:8px;}
+  .icon-btn{
+    background:linear-gradient(135deg,rgba(201,154,46,0.18),rgba(201,154,46,0.08));
+    color:var(--gold-hi);border-radius:9px;
+    padding:8px 13px;font-size:12.5px;font-weight:600;
+    border:1px solid rgba(201,154,46,0.35);
+    transition:transform .12s ease, background .12s ease;
+  }
+  .icon-btn:active{transform:scale(0.95);background:rgba(201,154,46,0.28);}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:34px 18px 0;
+    background:linear-gradient(165deg,var(--navy-deep) 0%,var(--navy) 55%,var(--sapphire) 100%);
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"";position:absolute;right:-70px;top:-70px;width:240px;height:240px;
+    border-radius:50%;border:1.5px solid rgba(201,154,46,0.25);
+  }
+  .hero-eyebrow{
+    position:relative;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--gold-hi);font-weight:700;margin-bottom:10px;
+  }
+  .hero h1{font-size:25px;line-height:1.32;font-weight:600;max-width:310px;position:relative;text-transform:none;}
+  .hero p{margin-top:10px;color:#B9C3D6;font-size:13.5px;max-width:290px;position:relative;}
+  .hero-actions{display:flex;flex-direction:row;gap:8px;margin-top:20px;position:relative;}
+  .road-divider{display:block;width:100%;height:36px;margin-top:26px;position:relative;}
+  .cta{
+    display:flex;flex-direction:column;align-items:flex-start;flex:1;
+    padding:11px 12px;border-radius:11px;
+    font-weight:600;font-size:12.5px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .cta:active{transform:scale(0.97);}
+  .cta-gold{background:linear-gradient(135deg,var(--gold-hi),var(--gold));color:var(--navy-deep);box-shadow:0 4px 14px rgba(201,154,46,0.32);}
+  .cta-outline{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.35);}
+  .cta small{display:block;font-weight:400;font-size:10.5px;opacity:0.85;margin-top:1px;}
+  .cta-arrow{font-size:15px;align-self:flex-end;margin-top:2px;}
+
+  /* ---------- Sections ---------- */
+  .section{padding:26px 18px;}
+  .section-title{font-size:19px;font-weight:600;margin-bottom:4px;}
+  .section-sub{font-size:13px;color:var(--muted);margin-bottom:16px;}
+  .eyebrow{
+    font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-deep);
+    font-weight:700;margin-bottom:6px;
+  }
+
+  /* ---------- Vehicle cards ---------- */
+  .vehicle-grid{display:flex;flex-direction:column;gap:12px;}
+  .vcard{
+    background:#fff;border:1px solid var(--line);border-top:3px solid var(--gold);
+    border-radius:var(--radius);
+    padding:16px;box-shadow:var(--shadow);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .vcard:active{transform:scale(0.99);}
+  .vcard-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .vtype-icon{
+    width:40px;height:40px;border-radius:11px;
+    background:linear-gradient(135deg,#EAF0FA,#DCE7F7);
+    display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;
+  }
+  .vcard-headrow{display:flex;align-items:center;gap:10px;}
+  .vtype{
+    font-size:11px;font-weight:700;color:var(--sapphire);
+    background:#EAF0FA;padding:3px 9px;border-radius:20px;letter-spacing:0.5px;
+  }
+  .vprice{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;color:var(--navy);}
+  .vprice small{font-family:'Inter';font-size:11px;font-weight:500;color:var(--muted);}
+  .vname{font-size:16px;font-weight:700;font-family:'Oswald',sans-serif;}
+  .vmeta{font-size:13px;color:var(--muted);margin-top:2px;}
+  .vfoot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);}
+  .vloc{font-size:12px;color:var(--muted);}
+  .btn-small{
+    background:linear-gradient(135deg,var(--sapphire-light),var(--navy));
+    color:#fff;padding:9px 16px;border-radius:10px;
+    font-size:13px;font-weight:600;transition:transform .12s ease, box-shadow .12s ease;
+    box-shadow:0 4px 12px rgba(10,23,48,0.22);
+  }
+  .btn-small:active{transform:scale(0.95);box-shadow:0 2px 6px rgba(10,23,48,0.2);}
+  .empty{
+    text-align:center;padding:30px 16px;color:var(--muted);font-size:13px;
+    background:#fff;border:1px dashed var(--line);border-radius:var(--radius);
+  }
+
+  /* ---------- Forms ---------- */
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--sapphire);margin-bottom:6px;}
+  .field input,.field select{
+    width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:10px;
+    font-size:14px;background:#fff;color:var(--ink);
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .field input:focus,.field select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,154,46,0.15);}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+  .btn-primary{
+    width:100%;background:linear-gradient(135deg,var(--sapphire-light),var(--navy) 70%);
+    color:#fff;padding:14px;border-radius:12px;
+    font-size:15px;font-weight:700;margin-top:4px;
+    box-shadow:0 8px 20px rgba(10,23,48,0.28);
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+  .btn-primary:active{transform:scale(0.98);box-shadow:0 4px 10px rgba(10,23,48,0.25);}
+  .btn-primary:disabled{opacity:0.5;box-shadow:none;}
+  .btn-ghost{
+    width:100%;background:transparent;color:var(--sapphire);padding:12px;
+    font-size:13.5px;font-weight:600;margin-top:8px;text-decoration:underline;
+  }
+  .btn-danger{background:linear-gradient(135deg,#C24E47,var(--danger));box-shadow:0 4px 12px rgba(179,65,59,0.3);}
+  .btn-green{background:linear-gradient(135deg,#2A9564,var(--green));box-shadow:0 4px 12px rgba(30,122,76,0.3);}
+  .msg{
+    padding:11px 13px;border-radius:10px;font-size:13px;margin-bottom:14px;
+  }
+  .msg-error{background:#FBEAE9;color:var(--danger);}
+  .msg-success{background:var(--green-light);color:var(--green);}
+
+  /* ---------- Location search + map ---------- */
+  .loc-wrap{position:relative;}
+  .loc-suggestions{
+    position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:20;
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    box-shadow:var(--shadow);max-height:220px;overflow-y:auto;
+  }
+  .loc-suggestion-item{
+    padding:11px 13px;font-size:13px;border-bottom:1px solid var(--line);
+    display:flex;align-items:flex-start;gap:8px;
+  }
+  .loc-suggestion-item:last-child{border-bottom:none;}
+  .loc-suggestion-item:active{background:var(--cream);}
+  .loc-suggestion-item .pin{color:var(--gold-deep);flex-shrink:0;}
+  .loc-picked{
+    display:none;align-items:center;gap:8px;background:var(--green-light);
+    color:var(--green);padding:9px 12px;border-radius:10px;font-size:12.5px;
+    font-weight:600;margin-top:8px;
+  }
+  .loc-picked.show{display:flex;}
+  .map-preview{
+    width:100%;height:160px;border-radius:12px;margin-top:10px;
+    border:1px solid var(--line);display:none;overflow:hidden;
+  }
+  .map-preview.show{display:block;}
+  .map-box{width:100%;height:100%;}
+  .map-full{width:100%;height:340px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);}
+  .browse-toggle{display:flex;gap:6px;background:#EDEAE1;padding:4px;border-radius:12px;margin-bottom:16px;}
+  .browse-toggle button{flex:1;padding:9px;border-radius:9px;font-size:13px;font-weight:600;color:var(--muted);background:transparent;transition:all .15s ease;}
+  .browse-toggle button.active{background:linear-gradient(135deg,#fff,#fdfcf8);color:var(--navy);box-shadow:0 2px 8px rgba(10,23,48,0.12);}
+  .leaflet-popup-content{font-family:'Inter',sans-serif;font-size:13px;}
+  .popup-book-btn{
+    background:var(--navy);color:#fff;padding:7px 12px;border-radius:8px;
+    font-size:12px;font-weight:600;margin-top:6px;display:inline-block;
+  }
+  .msg-info{background:#EAF0FA;color:var(--sapphire);}
+
+  /* ---------- Modal / Sheet ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(11,37,69,0.55);z-index:100;
+    display:none;align-items:flex-end;justify-content:center;
+  }
+  .overlay.open{display:flex;}
+  .sheet{
+    background:var(--cream);width:100%;max-width:480px;
+    border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto;
+    animation:slideUp .25s ease;
+  }
+  @keyframes slideUp{from{transform:translateY(24px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .sheet-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 18px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:var(--cream);z-index:2;
+  }
+  .sheet-title{font-size:16px;font-weight:700;}
+  .close-btn{
+    width:32px;height:32px;border-radius:50%;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);
+    border:1px solid var(--line);
+  }
+  .sheet-body{padding:18px;}
+
+  /* ---------- Status badges ---------- */
+  .badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:0.3px;}
+  .badge-pending{background:#FBF0DE;color:#8A5A00;}
+  .badge-approved{background:var(--green-light);color:var(--green);}
+  .badge-rejected{background:#FBEAE9;color:var(--danger);}
+
+  /* ---------- Dashboard lists ---------- */
+  .drow{
+    background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:14px;margin-bottom:10px;
+  }
+  .drow-top{display:flex;justify-content:space-between;align-items:center;}
+  .drow-name{font-weight:600;font-size:14.5px;}
+  .drow-meta{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .drow-actions{display:flex;gap:8px;margin-top:10px;}
+  .drow-actions button{flex:1;padding:9px;border-radius:8px;font-size:12.5px;font-weight:600;}
+
+  .tabs{display:flex;gap:6px;margin-bottom:16px;background:#EDEAE1;padding:4px;border-radius:12px;}
+  .tab{flex:1;text-align:center;padding:9px;border-radius:9px;font-size:13px;font-weight:600;color:var(--muted);background:transparent;transition:all .15s ease;}
+  .tab.active{background:linear-gradient(135deg,#fff,#fdfcf8);color:var(--navy);box-shadow:0 2px 8px rgba(10,23,48,0.12);}
+
+  /* ---------- Road-motif signature divider ---------- */
+  .road-divider svg{width:100%;height:100%;display:block;}
+
+  /* ---------- Trust badges (hero) ---------- */
+  .trust-row{
+    display:flex;gap:8px;margin-top:18px;position:relative;
+    overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;
+  }
+  .trust-row::-webkit-scrollbar{display:none;}
+  .trust-chip{
+    flex-shrink:0;display:flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(201,154,46,0.3);
+    padding:7px 12px;border-radius:20px;font-size:11.5px;color:var(--silver);
+    font-weight:500;white-space:nowrap;
+  }
+  .trust-chip .dot{color:var(--gold-hi);}
+
+  /* ---------- Live stats strip ---------- */
+  .stats-strip{
+    display:flex;position:relative;margin-top:24px;
+    background:rgba(255,255,255,0.05);border-radius:14px;
+    border:1px solid rgba(201,154,46,0.2);overflow:hidden;
+  }
+  .stat-cell{flex:1;text-align:center;padding:16px 8px;}
+  .stat-cell + .stat-cell{border-left:1px solid rgba(201,154,46,0.2);}
+  .stat-num{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;color:var(--gold-hi);}
+  .stat-label{font-size:10px;color:var(--silver);letter-spacing:0.8px;text-transform:uppercase;margin-top:2px;}
+
+  /* ---------- How it works ---------- */
+  .steps-wrap{display:flex;flex-direction:column;gap:14px;}
+  .step-card{
+    display:flex;gap:14px;background:#fff;border:1px solid var(--line);
+    border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);
+    align-items:flex-start;
+  }
+  .step-num{
+    flex-shrink:0;width:38px;height:38px;border-radius:50%;
+    background:linear-gradient(135deg,var(--gold),var(--gold-deep));
+    color:var(--navy-deep);display:flex;align-items:center;justify-content:center;
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:16px;
+  }
+  .step-title{font-size:14.5px;font-weight:700;color:var(--navy);}
+  .step-desc{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45;}
+
+  /* ---------- Skeleton loaders ---------- */
+  .skeleton-card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;overflow:hidden;position:relative;
+  }
+  .skeleton-line{
+    height:12px;border-radius:6px;margin-bottom:8px;
+    background:linear-gradient(90deg,#EDEAE1 25%,#F5F3EC 37%,#EDEAE1 63%);
+    background-size:400% 100%;animation:shimmer 1.4s ease infinite;
+  }
+  @keyframes shimmer{0%{background-position:100% 0;}100%{background-position:0 0;}}
+
+  /* ---------- Fade-in on load ---------- */
+  .fade-up{animation:fadeUp .5s ease both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- Footer ---------- */
+  .footer{
+    background:var(--navy-deep);color:#B9C3D6;
+    padding:34px 20px 26px;
+  }
+  .footer-brand{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+  .footer-logo{width:46px;height:46px;border-radius:50%;object-fit:cover;border:1.5px solid var(--gold);}
+  .footer-brand-name{font-family:'Oswald',sans-serif;font-size:16px;color:#fff;letter-spacing:0.5px;}
+  .footer-brand-name span{color:var(--gold-hi);}
+  .footer-tag{font-size:10px;letter-spacing:2px;color:var(--silver);text-transform:uppercase;margin-top:2px;}
+  .footer-line{height:1px;background:rgba(201,154,46,0.25);margin:16px 0;}
+  .footer-links{display:flex;flex-direction:column;gap:9px;font-size:13px;}
+  .footer-links a{color:#D6DCE8;text-decoration:none;display:flex;align-items:center;gap:8px;}
+  .footer-links a span.ico{color:var(--gold-hi);width:16px;text-align:center;}
+  .footer-copy{margin-top:18px;font-size:11px;color:#5E6C87;}
+  .hidden{display:none !important;}
+  .loader{text-align:center;padding:20px;color:var(--muted);font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand-row">
+    <img src="logo.jpg" class="brand-logo" alt="DAXON MOBILITY">
+    <div>
+      <div class="brand">DAXON <span>MOBILITY</span></div>
+      <div class="tag">Car Rental</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="installBtn" style="display:none;" onclick="handleInstallClick()">⬇ Install</button>
+    <button class="icon-btn" onclick="openOwnerAuth()">Owner Login</button>
+    <button class="icon-btn" style="background:rgba(255,255,255,0.04);font-size:11px;" onclick="openAdminAuth()">Admin</button>
+  </div>
+</div>
+
+<div id="installOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;padding:22px;max-width:340px;width:100%;">
+    <h3 style="font-family:'Oswald',sans-serif;font-size:16px;margin-bottom:12px;">Install DAXON Rental</h3>
+    <p style="font-size:13.5px;color:var(--muted);line-height:1.6;">
+      <b>Android (Chrome):</b> Tap the <b>⋮</b> menu (top-right), then choose <b>"Add to Home screen"</b> or <b>"Install app"</b>.<br><br>
+      <b>iPhone (Safari):</b> Tap the Share icon <b>⬆</b> at the bottom, then choose <b>"Add to Home Screen"</b>.
+    </p>
+    <button type="button" id="installOverlayClose" class="btn-primary" style="margin-top:16px;">Got it</button>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow fade-up">Barman · Madhya Pradesh</div>
+  <h1 class="fade-up" style="animation-delay:.05s">List your car for rent, or rent a car to go wherever you need.</h1>
+  <p class="fade-up" style="animation-delay:.1s">Register your four-wheeler on DAXON MOBILITY and start earning, or book a trusted vehicle instantly.</p>
+  <div class="hero-actions fade-up" style="animation-delay:.15s">
+    <button class="cta cta-gold" onclick="openOwnerAuth()">
+      <span>Register Your Vehicle<small>Become an owner and earn</small></span>
+      <span class="cta-arrow">→</span>
+    </button>
+    <button class="cta cta-outline" onclick="scrollToBrowse()">
+      <span>Rent a Vehicle<small>View available vehicles</small></span>
+      <span class="cta-arrow">→</span>
+    </button>
+  </div>
+  <div class="trust-row fade-up" style="animation-delay:.2s">
+    <div class="trust-chip"><span class="dot">●</span> Verified Owners</div>
+    <div class="trust-chip"><span class="dot">●</span> Instant Booking</div>
+    <div class="trust-chip"><span class="dot">●</span> No Hidden Charges</div>
+  </div>
+  <div class="stats-strip fade-up" style="animation-delay:.25s">
+    <div class="stat-cell"><div class="stat-num" id="statVehicles">—</div><div class="stat-label">Vehicles</div></div>
+    <div class="stat-cell"><div class="stat-num" id="statOwners">—</div><div class="stat-label">Owners</div></div>
+    <div class="stat-cell"><div class="stat-num" id="statBookings">—</div><div class="stat-label">Trips Booked</div></div>
+  </div>
+  <div class="road-divider">
+    <svg viewBox="0 0 400 36" preserveAspectRatio="none">
+      <path d="M0,10 C120,10 140,30 260,30 C320,30 350,15 400,15" stroke="#2A3F63" stroke-width="2" fill="none"/>
+      <path d="M0,18 C120,18 150,4 270,4 C330,4 360,22 400,22" stroke="#C99A2E" stroke-width="1.5" fill="none" stroke-dasharray="7 7" opacity="0.75"/>
+    </svg>
+  </div>
+</div>
+
+<div class="section">
+  <div class="eyebrow">Simple Process</div>
+  <div class="section-title">How It Works</div>
+  <div class="section-sub">Whether you're renting out or renting in, it takes just three steps.</div>
+  <div class="steps-wrap">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Register or Search</div>
+        <div class="step-desc">Owners list their vehicle with photos-free details in minutes. Renters simply search by location.</div>
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Get Approved & Book</div>
+        <div class="step-desc">Our admin verifies every vehicle before it goes live. Renters send a booking request with their travel dates.</div>
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Confirm & Drive</div>
+        <div class="step-desc">The owner accepts the request and calls to confirm handover. Simple, direct, and transparent.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="browseSection">
+  <div class="eyebrow">Available Vehicles</div>
+  <div class="section-title">Vehicles Available for Rent</div>
+  <div class="section-sub">Choose a vehicle to book — the owner will confirm your request.</div>
+  <div class="browse-toggle">
+    <button id="browseTabList" class="active" onclick="switchBrowseView('list')">☰ List View</button>
+    <button id="browseTabMap" onclick="switchBrowseView('map')">📍 Map View</button>
+  </div>
+  <div id="vehicleList" class="vehicle-grid">
+    <div class="skeleton-card"><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:50%"></div></div>
+    <div class="skeleton-card"><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:50%"></div></div>
+  </div>
+  <div id="vehicleMapWrap" class="hidden">
+    <div class="map-full" id="browseMapBox"></div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">
+    <img src="logo.jpg" class="footer-logo" alt="DAXON MOBILITY">
+    <div>
+      <div class="footer-brand-name">DAXON <span>MOBILITY</span></div>
+      <div class="footer-tag">Car Rental Service</div>
+    </div>
+  </div>
+  <div class="footer-line"></div>
+  <div class="footer-links">
+    <a href="https://daxonmobility.com" target="_blank"><span class="ico">🌐</span> daxonmobility.com</a>
+    <a href="mailto:admin@daxonmobility.com"><span class="ico">✉</span> admin@daxonmobility.com</a>
+    <a><span class="ico">📍</span> Barman, Madhya Pradesh</a>
+  </div>
+  <div class="footer-copy">© 2026 DAXON MOBILITY. All rights reserved.</div>
+</div>
+
+<!-- ============ OWNER AUTH SHEET ============ -->
+<div class="overlay" id="ownerAuthOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="sheet-title">Owner Login / Register</div>
+      <button class="close-btn" onclick="closeOverlay('ownerAuthOverlay')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="tabs">
+        <button class="tab active" id="tabLogin" onclick="switchOwnerTab('login')">Login</button>
+        <button class="tab" id="tabRegister" onclick="switchOwnerTab('register')">New Registration</button>
+      </div>
+
+      <div id="ownerMsg"></div>
+
+      <!-- LOGIN -->
+      <div id="ownerLoginForm">
+        <div class="field">
+          <label>Mobile Number</label>
+          <input type="tel" id="loginPhone" placeholder="10-digit mobile number" maxlength="10">
+        </div>
+        <div class="field">
+          <label>PIN</label>
+          <input type="password" id="loginPin" placeholder="4-digit PIN" maxlength="4" inputmode="numeric">
+        </div>
+        <button class="btn-primary" onclick="ownerLogin()">Log In</button>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="ownerRegisterForm" class="hidden">
+        <div class="field">
+          <label>Your Name</label>
+          <input type="text" id="regName" placeholder="Full name">
+        </div>
+        <div class="field">
+          <label>Mobile Number</label>
+          <input type="tel" id="regPhone" placeholder="10-digit mobile number" maxlength="10">
+        </div>
+        <div class="field">
+          <label>Create a 4-Digit PIN</label>
+          <input type="password" id="regPin" placeholder="4-digit PIN" maxlength="4" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label>Vehicle Type</label>
+          <select id="regType">
+            <option value="Hatchback">Hatchback</option>
+            <option value="Sedan">Sedan</option>
+            <option value="SUV">SUV</option>
+            <option value="Van">Van</option>
+            <option value="Pickup">Pickup</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Model / Name (e.g. Swift, Ertiga)</label>
+          <input type="text" id="regModel" placeholder="Vehicle model">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Number Plate</label>
+            <input type="text" id="regPlate" placeholder="MP-XX-XX-XXXX">
+          </div>
+          <div class="field">
+            <label>Seats</label>
+            <input type="number" id="regSeats" placeholder="5">
+          </div>
+        </div>
+        <div class="field">
+          <label>Rent / Day (₹)</label>
+          <input type="number" id="regRent" placeholder="1500">
+        </div>
+        <div class="field">
+          <label>Location (State, City or Village)</label>
+          <div class="loc-wrap">
+            <input type="text" id="regLocation" placeholder="Start typing your location..." autocomplete="off" oninput="handleLocationInput(this.value, 'reg')">
+            <div class="loc-suggestions hidden" id="regLocSuggestions"></div>
+          </div>
+          <div class="loc-picked" id="regLocPicked"><span>📍</span><span id="regLocPickedText"></span></div>
+          <div class="map-preview" id="regMapPreview"><div class="map-box" id="regMapBox"></div></div>
+        </div>
+        <button class="btn-primary" onclick="ownerRegister()">Submit Registration</button>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;">After registration, your vehicle won't appear in the list until admin approval.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ OWNER DASHBOARD SHEET ============ -->
+<div class="overlay" id="ownerDashOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="sheet-title" id="ownerDashTitle">My Dashboard</div>
+      <button class="close-btn" onclick="ownerLogout()">⎋</button>
+    </div>
+    <div class="sheet-body">
+      <div id="ownerStatusMsg"></div>
+      <h3 style="font-size:14px;margin:10px 0 8px;">My Vehicle</h3>
+      <div id="ownerVehicleBox"></div>
+      <h3 style="font-size:14px;margin:18px 0 8px;">Booking Requests</h3>
+      <div id="ownerBookings"><div class="loader">Loading...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BOOKING SHEET ============ -->
+<div class="overlay" id="bookingOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="sheet-title">Book a Vehicle</div>
+      <button class="close-btn" onclick="closeOverlay('bookingOverlay')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div id="bookingVehicleInfo" style="margin-bottom:14px;"></div>
+      <div id="bookingMsg"></div>
+      <div class="field">
+        <label>Your Name</label>
+        <input type="text" id="bkName" placeholder="Full name">
+      </div>
+      <div class="field">
+        <label>Mobile Number</label>
+        <input type="tel" id="bkPhone" placeholder="10-digit mobile number" maxlength="10">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>From</label>
+          <input type="date" id="bkFrom" onchange="checkDateAvailability()">
+        </div>
+        <div class="field">
+          <label>To</label>
+          <input type="date" id="bkTo" onchange="checkDateAvailability()">
+        </div>
+      </div>
+      <div id="dateAvailMsg"></div>
+      <div class="field">
+        <label>Destination (optional)</label>
+        <input type="text" id="bkDestination" placeholder="Where are you going?">
+      </div>
+      <button class="btn-primary" id="bkSubmitBtn" onclick="submitBooking()">Send Booking Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADMIN AUTH SHEET ============ -->
+<div class="overlay" id="adminAuthOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="sheet-title">Admin Login</div>
+      <button class="close-btn" onclick="closeOverlay('adminAuthOverlay')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div id="adminAuthMsg"></div>
+      <div class="field">
+        <label>Admin Password</label>
+        <input type="password" id="adminPassword" placeholder="Password">
+      </div>
+      <button class="btn-primary" onclick="adminLogin()">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADMIN DASHBOARD SHEET ============ -->
+<div class="overlay" id="adminDashOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="sheet-title">Admin Panel</div>
+      <button class="close-btn" onclick="closeOverlay('adminDashOverlay')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="tabs">
+        <button class="tab active" id="atabOwners" onclick="switchAdminTab('owners')">Owners</button>
+        <button class="tab" id="atabVehicles" onclick="switchAdminTab('vehicles')">Vehicles</button>
+        <button class="tab" id="atabBookings" onclick="switchAdminTab('bookings')">Bookings</button>
+      </div>
+      <div id="adminOwners"></div>
+      <div id="adminVehicles" class="hidden"></div>
+      <div id="adminBookings" class="hidden"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   FIREBASE CONFIG
+   Paste your existing firebaseConfig here (same one used in
+   Business-Suite / Driver-Manager) — use the same "van-register" project.
+========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyDzABowWH-8LZrRhrIssvDhL4mfVT_DXOk",
+  authDomain: "van-register.firebaseapp.com",
+  databaseURL: "https://van-register-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "van-register",
+  storageBucket: "van-register.firebasestorage.app",
+  messagingSenderId: "89738000508",
+  appId: "1:89738000508:web:1ef2cbd3093dcb273131f9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+// Root node for this app — keeps data separate from school-van system
+const ROOT = "carRental";
+
+// Simple admin password (change this before going live)
+const ADMIN_PASSWORD = "daxon@admin";
+
+let currentOwnerId = null;
+let currentOwnerData = null;
+let selectedVehicleForBooking = null;
+
+/* ---------- Auth bootstrap ---------- */
+auth.signInAnonymously().catch(err => console.error("Auth error:", err));
+
+/* ---------- Install App (Add to Home Screen) ---------- */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(e => console.log('Service worker registration failed:', e));
+}
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('installBtn').style.display = 'inline-flex';
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBtn').style.display = 'none';
+});
+const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+if(!isStandaloneApp){
+  setTimeout(() => {
+    if(document.getElementById('installBtn').style.display === 'none'){
+      document.getElementById('installBtn').style.display = 'inline-flex';
+    }
+  }, 800);
+}
+async function handleInstallClick(){
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+  } else {
+    document.getElementById('installOverlay').style.display = 'flex';
+  }
+}
+document.getElementById('installOverlayClose').addEventListener('click', () => {
+  document.getElementById('installOverlay').style.display = 'none';
+});
+
+/* ---------- Overlay helpers ---------- */
+function openOverlay(id){ document.getElementById(id).classList.add('open'); }
+function closeOverlay(id){ document.getElementById(id).classList.remove('open'); }
+function scrollToBrowse(){ document.getElementById('browseSection').scrollIntoView({behavior:'smooth'}); }
+
+function openOwnerAuth(){
+  const savedPhone = localStorage.getItem('daxon_owner_phone');
+  const savedPin = localStorage.getItem('daxon_owner_pin');
+  if(savedPhone && savedPin){
+    tryOwnerLogin(savedPhone, savedPin, true);
+    return;
+  }
+  openOverlay('ownerAuthOverlay');
+}
+function openAdminAuth(){ openOverlay('adminAuthOverlay'); }
+
+function switchOwnerTab(tab){
+  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('tabRegister').classList.toggle('active', tab==='register');
+  document.getElementById('ownerLoginForm').classList.toggle('hidden', tab!=='login');
+  document.getElementById('ownerRegisterForm').classList.toggle('hidden', tab!=='register');
+  document.getElementById('ownerMsg').innerHTML = '';
+}
+
+function showMsg(elId, text, type){
+  document.getElementById(elId).innerHTML = `<div class="msg msg-${type}">${text}</div>`;
+}
+function clearMsg(elId){ document.getElementById(elId).innerHTML = ''; }
+
+/* =========================================================
+   OWNER: REGISTER
+========================================================= */
+function ownerRegister(){
+  const name = document.getElementById('regName').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const pin = document.getElementById('regPin').value.trim();
+  const type = document.getElementById('regType').value;
+  const model = document.getElementById('regModel').value.trim();
+  const plate = document.getElementById('regPlate').value.trim();
+  const seats = document.getElementById('regSeats').value.trim();
+  const rent = document.getElementById('regRent').value.trim();
+
+  if(!name||!phone||!pin||!model||!plate||!seats||!rent){
+    showMsg('ownerMsg','Please fill all fields.','error'); return;
+  }
+  if(phone.length!==10){ showMsg('ownerMsg','Mobile number must be 10 digits.','error'); return; }
+  if(pin.length!==4){ showMsg('ownerMsg','PIN must be 4 digits.','error'); return; }
+  if(!regLocationData){
+    showMsg('ownerMsg','Please select your location from the suggestions list.','error'); return;
+  }
+
+  const ownerRef = db.ref(`${ROOT}/owners/${phone}`);
+  ownerRef.once('value').then(snap => {
+    if(snap.exists()){
+      showMsg('ownerMsg','This number is already registered. Please log in.','error');
+      return;
+    }
+    const ownerData = {
+      name, phone, pin, status:'pending', createdAt: Date.now()
+    };
+    const vehicleData = {
+      ownerPhone: phone, ownerName: name, type, model, plate, seats,
+      rentPerDay: rent,
+      location: regLocationData.display,
+      lat: regLocationData.lat,
+      lng: regLocationData.lng,
+      status:'pending', available:true, createdAt: Date.now()
+    };
+    ownerRef.set(ownerData).then(() => {
+      db.ref(`${ROOT}/vehicles/${phone}`).set(vehicleData).then(() => {
+        showMsg('ownerMsg','Registration received! Your vehicle will appear in the list after admin approval. You can log in now.','success');
+        switchOwnerTab('login');
+        document.getElementById('loginPhone').value = phone;
+        regLocationData = null;
+      });
+    });
+  });
+}
+
+/* =========================================================
+   LOCATION SEARCH (OpenStreetMap Nominatim — free, no API key)
+========================================================= */
+let regLocationData = null;
+let locSearchDebounce = null;
+const mapInstances = {};
+
+function debounce(fn, delay){
+  return function(...args){
+    clearTimeout(locSearchDebounce);
+    locSearchDebounce = setTimeout(() => fn(...args), delay);
+  };
+}
+
+const handleLocationInput = debounce(function(query, context){
+  const box = document.getElementById(context+'LocSuggestions');
+  if(!query || query.trim().length < 3){
+    box.classList.add('hidden');
+    box.innerHTML = '';
+    return;
+  }
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=in&addressdetails=1&limit=6&q=${encodeURIComponent(query)}`, {
+    headers: { 'Accept-Language': 'en' }
+  })
+  .then(res => res.json())
+  .then(results => renderLocationSuggestions(results, context))
+  .catch(() => { box.classList.add('hidden'); });
+}, 500);
+
+function renderLocationSuggestions(results, context){
+  const box = document.getElementById(context+'LocSuggestions');
+  if(!results || results.length === 0){
+    box.innerHTML = '<div class="loc-suggestion-item">No matches found. Try a different spelling.</div>';
+    box.classList.remove('hidden');
+    return;
+  }
+  box.innerHTML = results.map((r, i) => `
+    <div class="loc-suggestion-item" onclick='pickLocation(${i}, "${context}")'>
+      <span class="pin">📍</span><span>${r.display_name}</span>
+    </div>
+  `).join('');
+  box.classList.remove('hidden');
+  window['__locResults_'+context] = results;
+}
+
+function pickLocation(index, context){
+  const results = window['__locResults_'+context];
+  const r = results[index];
+  const shortName = r.display_name.split(',').slice(0,3).join(',');
+  const data = { display: shortName, lat: parseFloat(r.lat), lng: parseFloat(r.lon) };
+
+  if(context === 'reg') regLocationData = data;
+
+  document.getElementById(context+'LocSuggestions').classList.add('hidden');
+  document.getElementById(context+'LocSuggestions').innerHTML = '';
+  document.getElementById(context+'Location').value = shortName;
+  document.getElementById(context+'LocPickedText').textContent = shortName;
+  document.getElementById(context+'LocPicked').classList.add('show');
+
+  const previewEl = document.getElementById(context+'MapPreview');
+  previewEl.classList.add('show');
+  showMiniMap(context+'MapBox', data.lat, data.lng, shortName);
+}
+
+function showMiniMap(containerId, lat, lng, label){
+  setTimeout(() => {
+    if(mapInstances[containerId]){
+      mapInstances[containerId].remove();
+    }
+    const map = L.map(containerId, { zoomControl:false, attributionControl:false }).setView([lat, lng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.marker([lat, lng]).addTo(map).bindPopup(label);
+    mapInstances[containerId] = map;
+  }, 50);
+}
+
+/* =========================================================
+   OWNER: LOGIN
+========================================================= */
+function ownerLogin(){
+  const phone = document.getElementById('loginPhone').value.trim();
+  const pin = document.getElementById('loginPin').value.trim();
+  if(!phone||!pin){ showMsg('ownerMsg','Enter your mobile number and PIN.','error'); return; }
+  tryOwnerLogin(phone, pin, false);
+}
+
+function tryOwnerLogin(phone, pin, silent){
+  db.ref(`${ROOT}/owners/${phone}`).once('value').then(snap => {
+    if(!snap.exists()){
+      if(!silent) showMsg('ownerMsg','No registration found. Please register first.','error');
+      else openOverlay('ownerAuthOverlay');
+      return;
+    }
+    const data = snap.val();
+    if(data.pin !== pin){
+      if(!silent) showMsg('ownerMsg','Incorrect PIN. Please try again.','error');
+      else openOverlay('ownerAuthOverlay');
+      return;
+    }
+    currentOwnerId = phone;
+    currentOwnerData = data;
+    localStorage.setItem('daxon_owner_phone', phone);
+    localStorage.setItem('daxon_owner_pin', pin);
+    closeOverlay('ownerAuthOverlay');
+    openOwnerDashboard();
+  });
+}
+
+function ownerLogout(){
+  currentOwnerId = null;
+  currentOwnerData = null;
+  localStorage.removeItem('daxon_owner_phone');
+  localStorage.removeItem('daxon_owner_pin');
+  closeOverlay('ownerDashOverlay');
+}
+
+/* =========================================================
+   OWNER DASHBOARD
+========================================================= */
+function openOwnerDashboard(){
+  document.getElementById('ownerDashTitle').textContent = `Welcome, ${currentOwnerData.name}`;
+  openOverlay('ownerDashOverlay');
+  renderOwnerStatus();
+  renderOwnerVehicle();
+  renderOwnerBookings();
+}
+
+function renderOwnerStatus(){
+  const box = document.getElementById('ownerStatusMsg');
+  if(currentOwnerData.status === 'pending'){
+    box.innerHTML = `<div class="msg msg-info">Your registration is awaiting admin approval.</div>`;
+  } else if(currentOwnerData.status === 'approved'){
+    box.innerHTML = `<div class="msg msg-success">Your vehicle is approved and live in the listings.</div>`;
+  } else {
+    box.innerHTML = `<div class="msg msg-error">Your registration was rejected. Please get in touch.</div>`;
+  }
+}
+
+function renderOwnerVehicle(){
+  db.ref(`${ROOT}/vehicles/${currentOwnerId}`).once('value').then(snap => {
+    const v = snap.val();
+    if(!v){ document.getElementById('ownerVehicleBox').innerHTML = '<div class="empty">No vehicle found.</div>'; return; }
+    const badgeClass = v.status==='approved'?'badge-approved':(v.status==='rejected'?'badge-rejected':'badge-pending');
+    document.getElementById('ownerVehicleBox').innerHTML = `
+      <div class="drow">
+        <div class="drow-top">
+          <div class="drow-name">${v.model} (${v.type})</div>
+          <span class="badge ${badgeClass}">${v.status}</span>
+        </div>
+        <div class="drow-meta">${v.plate} • ${v.seats} seats • ₹${v.rentPerDay}/day • ${v.location}</div>
+        <div class="drow-actions">
+          <button class="btn-small" style="flex:1;background:${v.available?'var(--green)':'var(--danger)'}" onclick="toggleAvailability('${v.available}')">
+            ${v.available ? 'Available (Tap to pause)' : 'Paused (Tap to enable)'}
+          </button>
+        </div>
+      </div>`;
+  });
+}
+
+function toggleAvailability(currentVal){
+  const newVal = currentVal !== 'true';
+  db.ref(`${ROOT}/vehicles/${currentOwnerId}/available`).set(newVal).then(renderOwnerVehicle);
+}
+
+function renderOwnerBookings(){
+  db.ref(`${ROOT}/bookings`).orderByChild('vehicleId').equalTo(currentOwnerId).once('value').then(snap => {
+    const box = document.getElementById('ownerBookings');
+    if(!snap.exists()){ box.innerHTML = '<div class="empty">No booking requests yet.</div>'; return; }
+    let html = '';
+    snap.forEach(child => {
+      const b = child.val(); const id = child.key;
+      const badgeClass = b.status==='approved'?'badge-approved':(b.status==='rejected'?'badge-rejected':'badge-pending');
+      html += `
+        <div class="drow">
+          <div class="drow-top">
+            <div class="drow-name">${b.renterName}</div>
+            <span class="badge ${badgeClass}">${b.status}</span>
+          </div>
+          <div class="drow-meta">📞 ${b.renterPhone} • ${b.fromDate} to ${b.toDate}</div>
+          ${b.destination ? `<div class="drow-meta">📍 ${b.destination}</div>` : ''}
+          ${b.status==='pending' ? `
+          <div class="drow-actions">
+            <button class="btn-small btn-green" onclick="updateBooking('${id}','approved')">Accept</button>
+            <button class="btn-small btn-danger" onclick="updateBooking('${id}','rejected')">Reject</button>
+          </div>` : ''}
+        </div>`;
+    });
+    box.innerHTML = html;
+  });
+}
+
+function updateBooking(id, status){
+  if(status !== 'approved'){
+    db.ref(`${ROOT}/bookings/${id}/status`).set(status).then(renderOwnerBookings);
+    return;
+  }
+  // Before approving, make sure these dates don't clash with an already-approved booking
+  db.ref(`${ROOT}/bookings/${id}`).once('value').then(snap => {
+    const thisBooking = snap.val();
+    getApprovedBookingsForVehicle(thisBooking.vehicleId, (approved) => {
+      const clash = approved.find(b => datesOverlap(thisBooking.fromDate, thisBooking.toDate, b.fromDate, b.toDate));
+      if(clash){
+        alert(`These dates (${thisBooking.fromDate} to ${thisBooking.toDate}) clash with an already-approved booking (${clash.renterName}, ${clash.fromDate}-${clash.toDate}). Please review that booking first.`);
+        return;
+      }
+      db.ref(`${ROOT}/bookings/${id}/status`).set('approved').then(renderOwnerBookings);
+    });
+  });
+}
+
+/* =========================================================
+   RENTER: BROWSE VEHICLES
+========================================================= */
+function vehicleIcon(type){
+  const icons = { Hatchback:'🚗', Sedan:'🚙', SUV:'🚜', Van:'🚐', Pickup:'🛻' };
+  return icons[type] || '🚗';
+}
+
+function renderVehicleList(){
+  db.ref(`${ROOT}/vehicles`).once('value').then(snap => {
+    const list = document.getElementById('vehicleList');
+    if(!snap.exists()){ list.innerHTML = '<div class="empty">No vehicles available right now.</div>'; window.__approvedVehicles = []; return; }
+    let items = [];
+    snap.forEach(child => {
+      const v = child.val();
+      if(v.status==='approved' && v.available) items.push({...v, id: child.key});
+    });
+    window.__approvedVehicles = items;
+    if(items.length===0){ list.innerHTML = '<div class="empty">No vehicles available right now. Please check back later.</div>'; return; }
+    list.innerHTML = items.map((v,i) => `
+      <div class="vcard fade-up" style="animation-delay:${Math.min(i*0.05,0.3)}s">
+        <div class="vcard-top">
+          <div class="vcard-headrow">
+            <div class="vtype-icon">${vehicleIcon(v.type)}</div>
+            <div>
+              <span class="vtype">${v.type}</span>
+              <div class="vname">${v.model}</div>
+            </div>
+          </div>
+          <div class="vprice">₹${v.rentPerDay}<small>/day</small></div>
+        </div>
+        <div class="vmeta">${v.seats} seats • ${v.plate}</div>
+        <div class="vfoot">
+          <span class="vloc">📍 ${v.location}</span>
+          <button class="btn-small" onclick='openBooking(${JSON.stringify(v)})'>Book Now</button>
+        </div>
+      </div>
+    `).join('');
+  });
+}
+renderVehicleList();
+
+/* =========================================================
+   LIVE STATS STRIP
+========================================================= */
+function renderStats(){
+  db.ref(`${ROOT}/vehicles`).once('value').then(snap => {
+    let vCount = 0, ownerSet = new Set();
+    if(snap.exists()){
+      snap.forEach(child => {
+        const v = child.val();
+        if(v.status === 'approved'){ vCount++; ownerSet.add(v.ownerPhone); }
+      });
+    }
+    document.getElementById('statVehicles').textContent = vCount;
+    document.getElementById('statOwners').textContent = ownerSet.size;
+  });
+  db.ref(`${ROOT}/bookings`).once('value').then(snap => {
+    let bCount = 0;
+    if(snap.exists()){
+      snap.forEach(child => { if(child.val().status === 'approved') bCount++; });
+    }
+    document.getElementById('statBookings').textContent = bCount;
+  });
+}
+renderStats();
+
+/* =========================================================
+   BROWSE: MAP VIEW (all available vehicles as pins)
+========================================================= */
+function switchBrowseView(view){
+  document.getElementById('browseTabList').classList.toggle('active', view==='list');
+  document.getElementById('browseTabMap').classList.toggle('active', view==='map');
+  document.getElementById('vehicleList').classList.toggle('hidden', view!=='list');
+  document.getElementById('vehicleMapWrap').classList.toggle('hidden', view!=='map');
+  if(view === 'map') renderBrowseMap();
+}
+
+function renderBrowseMap(){
+  const items = (window.__approvedVehicles || []).filter(v => v.lat && v.lng);
+  const containerId = 'browseMapBox';
+  setTimeout(() => {
+    if(mapInstances[containerId]) mapInstances[containerId].remove();
+    const centerLat = items.length ? items[0].lat : 22.9734;
+    const centerLng = items.length ? items[0].lng : 78.6569;
+    const map = L.map(containerId).setView([centerLat, centerLng], items.length ? 11 : 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    const markers = [];
+    items.forEach(v => {
+      const marker = L.marker([v.lat, v.lng]).addTo(map);
+      marker.bindPopup(`
+        <b>${v.model}</b> (${v.type})<br>
+        ${v.seats} seats • ₹${v.rentPerDay}/day<br>
+        📍 ${v.location}<br>
+        <span class="popup-book-btn" onclick='openBooking(${JSON.stringify(v)})'>Book Now</span>
+      `);
+      markers.push(marker);
+    });
+    if(markers.length > 1){
+      const group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.2));
+    }
+    mapInstances[containerId] = map;
+  }, 50);
+}
+
+/* =========================================================
+   RENTER: BOOKING
+========================================================= */
+function openBooking(vehicle){
+  selectedVehicleForBooking = vehicle;
+  document.getElementById('bookingVehicleInfo').innerHTML = `
+    <div class="drow">
+      <div class="drow-name">${vehicle.model} (${vehicle.type})</div>
+      <div class="drow-meta">${vehicle.seats} seats • ₹${vehicle.rentPerDay}/day • ${vehicle.location}</div>
+    </div>`;
+  clearMsg('bookingMsg');
+  document.getElementById('dateAvailMsg').innerHTML = '';
+  document.getElementById('bkFrom').value = '';
+  document.getElementById('bkTo').value = '';
+  document.getElementById('bkSubmitBtn').disabled = false;
+  openOverlay('bookingOverlay');
+}
+
+// Returns true if [from,to] overlaps [existFrom,existTo] (inclusive, string dates YYYY-MM-DD)
+function datesOverlap(from, to, existFrom, existTo){
+  return from <= existTo && to >= existFrom;
+}
+
+// Fetch approved bookings for the vehicle currently open in the booking sheet
+function getApprovedBookingsForVehicle(vehicleId, callback){
+  db.ref(`${ROOT}/bookings`).orderByChild('vehicleId').equalTo(vehicleId).once('value').then(snap => {
+    const list = [];
+    snap.forEach(child => {
+      const b = child.val();
+      if(b.status === 'approved') list.push(b);
+    });
+    callback(list);
+  });
+}
+
+function checkDateAvailability(){
+  const from = document.getElementById('bkFrom').value;
+  const to = document.getElementById('bkTo').value;
+  const msgBox = document.getElementById('dateAvailMsg');
+  const submitBtn = document.getElementById('bkSubmitBtn');
+  msgBox.innerHTML = '';
+  if(!from || !to || !selectedVehicleForBooking) return;
+  if(to < from){
+    msgBox.innerHTML = `<div class="msg msg-error">The "To" date must be after the "From" date.</div>`;
+    submitBtn.disabled = true;
+    return;
+  }
+  getApprovedBookingsForVehicle(selectedVehicleForBooking.id, (approved) => {
+    const clash = approved.find(b => datesOverlap(from, to, b.fromDate, b.toDate));
+    if(clash){
+      msgBox.innerHTML = `<div class="msg msg-error">This vehicle is already booked from ${clash.fromDate} to ${clash.toDate}. Please choose different dates.</div>`;
+      submitBtn.disabled = true;
+    } else {
+      msgBox.innerHTML = `<div class="msg msg-success">These dates are available.</div>`;
+      submitBtn.disabled = false;
+    }
+  });
+}
+
+function submitBooking(){
+  const name = document.getElementById('bkName').value.trim();
+  const phone = document.getElementById('bkPhone').value.trim();
+  const from = document.getElementById('bkFrom').value;
+  const to = document.getElementById('bkTo').value;
+  const destination = document.getElementById('bkDestination').value.trim();
+
+  if(!name||!phone||!from||!to){ showMsg('bookingMsg','Please fill in all required fields.','error'); return; }
+  if(phone.length!==10){ showMsg('bookingMsg','Mobile number must be 10 digits.','error'); return; }
+  if(to < from){ showMsg('bookingMsg','The "To" date must be after the "From" date.','error'); return; }
+
+  // Final server-side style check right before saving, so two people can't slip through together
+  getApprovedBookingsForVehicle(selectedVehicleForBooking.id, (approved) => {
+    const clash = approved.find(b => datesOverlap(from, to, b.fromDate, b.toDate));
+    if(clash){
+      showMsg('bookingMsg', `This vehicle is already booked from ${clash.fromDate} to ${clash.toDate}. Please choose different dates.`, 'error');
+      document.getElementById('bkSubmitBtn').disabled = true;
+      return;
+    }
+    const booking = {
+      vehicleId: selectedVehicleForBooking.id,
+      vehicleModel: selectedVehicleForBooking.model,
+      ownerPhone: selectedVehicleForBooking.ownerPhone,
+      renterName: name, renterPhone: phone,
+      fromDate: from, toDate: to, destination,
+      status: 'pending', createdAt: Date.now()
+    };
+    db.ref(`${ROOT}/bookings`).push(booking).then(() => {
+      showMsg('bookingMsg','Booking request sent! The owner will confirm and call you.','success');
+      setTimeout(() => closeOverlay('bookingOverlay'), 1800);
+    });
+  });
+}
+
+/* =========================================================
+   ADMIN
+========================================================= */
+function adminLogin(){
+  const pw = document.getElementById('adminPassword').value;
+  if(pw === ADMIN_PASSWORD){
+    closeOverlay('adminAuthOverlay');
+    openOverlay('adminDashOverlay');
+    switchAdminTab('owners');
+  } else {
+    showMsg('adminAuthMsg','Incorrect password.','error');
+  }
+}
+
+function switchAdminTab(tab){
+  ['owners','vehicles','bookings'].forEach(t => {
+    document.getElementById('atab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
+    document.getElementById('admin'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('hidden', t!==tab);
+  });
+  if(tab==='owners') renderAdminOwners();
+  if(tab==='vehicles') renderAdminVehicles();
+  if(tab==='bookings') renderAdminBookings();
+}
+
+function renderAdminOwners(){
+  db.ref(`${ROOT}/owners`).once('value').then(snap => {
+    const box = document.getElementById('adminOwners');
+    if(!snap.exists()){ box.innerHTML = '<div class="empty">No owner registrations yet.</div>'; return; }
+    let html = '';
+    snap.forEach(child => {
+      const o = child.val(); const phone = child.key;
+      const badgeClass = o.status==='approved'?'badge-approved':(o.status==='rejected'?'badge-rejected':'badge-pending');
+      html += `
+        <div class="drow">
+          <div class="drow-top">
+            <div class="drow-name">${o.name}</div>
+            <span class="badge ${badgeClass}">${o.status}</span>
+          </div>
+          <div class="drow-meta">📞 ${phone}</div>
+          <div class="drow-actions">
+            <button class="btn-small btn-green" onclick="setOwnerStatus('${phone}','approved')">Approve</button>
+            <button class="btn-small btn-danger" onclick="setOwnerStatus('${phone}','rejected')">Reject</button>
+          </div>
+        </div>`;
+    });
+    box.innerHTML = html;
+  });
+}
+
+function setOwnerStatus(phone, status){
+  db.ref(`${ROOT}/owners/${phone}/status`).set(status);
+  db.ref(`${ROOT}/vehicles/${phone}/status`).set(status).then(() => {
+    renderAdminOwners();
+  });
+}
+
+function renderAdminVehicles(){
+  db.ref(`${ROOT}/vehicles`).once('value').then(snap => {
+    const box = document.getElementById('adminVehicles');
+    if(!snap.exists()){ box.innerHTML = '<div class="empty">No vehicles yet.</div>'; return; }
+    let html = '';
+    snap.forEach(child => {
+      const v = child.val();
+      const badgeClass = v.status==='approved'?'badge-approved':(v.status==='rejected'?'badge-rejected':'badge-pending');
+      html += `
+        <div class="drow">
+          <div class="drow-top">
+            <div class="drow-name">${v.model} — ${v.ownerName}</div>
+            <span class="badge ${badgeClass}">${v.status}</span>
+          </div>
+          <div class="drow-meta">${v.plate} • ${v.type} • ₹${v.rentPerDay}/day • ${v.location}</div>
+        </div>`;
+    });
+    box.innerHTML = html;
+  });
+}
+
+function renderAdminBookings(){
+  db.ref(`${ROOT}/bookings`).once('value').then(snap => {
+    const box = document.getElementById('adminBookings');
+    if(!snap.exists()){ box.innerHTML = '<div class="empty">No bookings yet.</div>'; return; }
+    let html = '';
+    snap.forEach(child => {
+      const b = child.val();
+      const badgeClass = b.status==='approved'?'badge-approved':(b.status==='rejected'?'badge-rejected':'badge-pending');
+      html += `
+        <div class="drow">
+          <div class="drow-top">
+            <div class="drow-name">${b.renterName} → ${b.vehicleModel}</div>
+            <span class="badge ${badgeClass}">${b.status}</span>
+          </div>
+          <div class="drow-meta">📞 ${b.renterPhone} • ${b.fromDate} to ${b.toDate}</div>
+        </div>`;
+    });
+    box.innerHTML = html;
+  });
+}
+</script>
+</body>
+</html>

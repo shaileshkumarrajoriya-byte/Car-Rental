@@ -1,0 +1,15 @@
+{
+  "name": "DAXON MOBILITY - Car Rental",
+  "short_name": "DAXON Rental",
+  "description": "Register your vehicle for rent or book a trusted vehicle for your trip.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0A1730",
+  "theme_color": "#0A1730",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
